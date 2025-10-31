@@ -156,26 +156,20 @@
         // Chart setup
         const ctx = document.getElementById('tempChart').getContext('2d');
         let chart = new CanvasJS.Chart("tempChart", {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
+            data: [
                     {
+                        type: "spline",
                         label: 'Material Temperature',
-                        data: [],
-                        borderColor: 'rgb(255, 99, 132)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        dataPoints: [],
                         tension: 0.1
                     },
                     {
+                        type: "spline",
                         label: 'Water Temperature',
-                        data: [],
-                        borderColor: 'rgb(54, 162, 235)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        dataPoints: [],
                         tension: 0.1
                     }
-                ]
-            },
+            ],
             options: {
                 responsive: true,
                 scales: {
@@ -255,12 +249,12 @@
             }
             
             // Update chart
-            chart.data.labels = timePoints;
-            chart.data.datasets[0].data = materialTempPoints;
-            chart.data.datasets[1].data = waterTempPoints;
-            chart.data.datasets[0].label = `${materials[material].name} Temperature`;
-            chart.data.datasets[0].borderColor = materials[material].color;
-            chart.update();
+            // chart.data.labels = timePoints;
+            chart.data[0].dataPoints = materialTempPoints;
+            chart.data[1].dataPoints = waterTempPoints;
+            chart.data[0].label = `${materials[material].name} Temperature`;
+            chart.data[0].borderColor = materials[material].color;
+            chart.render();
         });
 
         // Update material info when selection changes
