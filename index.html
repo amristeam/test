@@ -133,6 +133,7 @@
     </div>
 
     <script>
+        window.onload = function() {
         // Material properties
         const materials = {
             gold: {
@@ -154,7 +155,7 @@
 
         // Chart setup
         const ctx = document.getElementById('tempChart').getContext('2d');
-        let chart = new Chart(ctx, {
+        let chart = new CanvasJS.Chart(ctx, {
             type: 'line',
             data: {
                 labels: [],
@@ -267,7 +268,8 @@
         
         // Initialize
         updateMaterialInfo();
+        }
     </script>
-<script defer="" src="./Calorimetry Simulation_files/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;7f017c73099d46f0b032c070dc5e6bd7&quot;,&quot;r&quot;:1,&quot;server_timing&quot;:{&quot;name&quot;:{&quot;cfCacheStatus&quot;:true,&quot;cfEdge&quot;:true,&quot;cfExtPri&quot;:true,&quot;cfL4&quot;:true,&quot;cfOrigin&quot;:true,&quot;cfSpeedBrain&quot;:true},&quot;location_startswith&quot;:null}}" crossorigin="anonymous"></script>
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 
 </body></html>
