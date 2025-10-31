@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<!-- saved from url=(0127)https://kharismabangsa.edunav.net/storage/kharisma/storage/4637/11504/27376/27884/1755245140-deepseek_html_20250815_0e12f3.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <title>Calorimetry Simulation</title>
+    <script src="./Calorimetry Simulation_files/chart.js.download"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .controls {
+            flex: 1;
+            min-width: 300px;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .graph {
+            flex: 2;
+            min-width: 500px;
+        }
+        .material-selector {
+            margin-bottom: 20px;
+        }
+        .results {
+            margin-top: 20px;
+            background: #e9f7ef;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calorimetry Simulation</h1>
+    <p>This simulation demonstrates heat transfer using a calorimeter. Heat a material and then place it in water to measure the temperature change.</p>
+    
+    <div class="container">
+        <div class="controls">
+            <h2>Controls</h2>
+            
+            <div class="material-selector">
+                <label for="material">Select Material:</label>
+                <select id="material">
+                    <option value="gold">Gold</option>
+                    <option value="copper">Copper</option>
+                    <option value="iron">Iron</option>
+                </select>
+                
+                <label for="mass">Mass of Material (g):</label>
+                <input type="number" id="mass" min="1" max="500" value="100">
+                
+                <label for="initialTemp">Initial Temperature of Material (°C):</label>
+                <input type="number" id="initialTemp" min="20" max="500" value="200">
+                
+                <label for="waterMass">Mass of Water in Calorimeter (g):</label>
+                <input type="number" id="waterMass" min="10" max="1000" value="200">
+                
+                <label for="waterTemp">Initial Water Temperature (°C):</label>
+                <input type="number" id="waterTemp" min="0" max="100" value="25">
+                
+                <button id="startBtn">Start Experiment</button>
+            </div>
+            
+            <div class="results" id="results">
+                <h3>Results</h3>
+                <p>Final Temperature: <span id="finalTemp">-</span> °C</p>
+                <p>Heat Lost by Material: <span id="heatLost">-</span> J</p>
+                <p>Heat Gained by Water: <span id="heatGained">-</span> J</p>
+                
+                <h3>Material Properties</h3>
+                <table>
+                    <tbody><tr>
+                        <th>Property</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>Specific Heat Capacity</td>
+                        <td id="specificHeat">0.129 J/g°C</td>
+                    </tr>
+                    <tr>
+                        <td>Color</td>
+                        <td id="materialColor">Gold</td>
+                    </tr>
+                </tbody></table>
+            </div>
+        </div>
+        
+        <div class="graph">
+            <h2>Temperature vs. Time</h2>
+            <canvas id="tempChart" width="825" height="412" style="display: block; box-sizing: border-box; height: 275px; width: 550px;"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Material properties
+        const materials = {
+            gold: {
+                name: "Gold",
+                specificHeat: 0.129, // J/g°C
+                color: "gold"
+            },
+            copper: {
+                name: "Copper",
+                specificHeat: 0.385,
+                color: "#b87333" // copper color
+            },
+            iron: {
+                name: "Iron",
+                specificHeat: 0.450,
+                color: "#a19d94"
+            }
+        };
+
+        // Chart setup
+        const ctx = document.getElementById('tempChart').getContext('2d');
+        let chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Material Temperature',
+                        data: [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Water Temperature',
+                        data: [],
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Temperature (°C)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (seconds)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update material info display
+        function updateMaterialInfo() {
+            const material = document.getElementById('material').value;
+            document.getElementById('specificHeat').textContent = 
+                `${materials[material].specificHeat} J/g°C`;
+            document.getElementById('materialColor').textContent = 
+                materials[material].name;
+        }
+
+        // Run the simulation
+        document.getElementById('startBtn').addEventListener('click', function() {
+            // Get input values
+            const material = document.getElementById('material').value;
+            const mass = parseFloat(document.getElementById('mass').value);
+            const initialTemp = parseFloat(document.getElementById('initialTemp').value);
+            const waterMass = parseFloat(document.getElementById('waterMass').value);
+            const waterTemp = parseFloat(document.getElementById('waterTemp').value);
+            
+            // Specific heat capacities
+            const materialSHC = materials[material].specificHeat;
+            const waterSHC = 4.184; // J/g°C
+            
+            // Calculate final temperature (assuming perfect calorimeter)
+            // Qlost = Qgained
+            // m1*c1*(T1-Tf) = m2*c2*(Tf-T2)
+            const numerator = (mass * materialSHC * initialTemp) + (waterMass * waterSHC * waterTemp);
+            const denominator = (mass * materialSHC) + (waterMass * waterSHC);
+            const finalTemp = numerator / denominator;
+            
+            // Calculate heat transfer
+            const heatLost = mass * materialSHC * (initialTemp - finalTemp);
+            const heatGained = waterMass * waterSHC * (finalTemp - waterTemp);
+            
+            // Display results
+            document.getElementById('finalTemp').textContent = finalTemp.toFixed(2);
+            document.getElementById('heatLost').textContent = heatLost.toFixed(2);
+            document.getElementById('heatGained').textContent = heatGained.toFixed(2);
+            
+            // Generate temperature vs time data
+            const timePoints = [];
+            const materialTempPoints = [];
+            const waterTempPoints = [];
+            
+            const coolingRate = 0.05; // arbitrary cooling rate for visualization
+            const steps = 60;
+            
+            for (let i = 0; i <= steps; i++) {
+                timePoints.push(i);
+                
+                // Material cooling curve (exponential approach to final temp)
+                const matTemp = finalTemp + (initialTemp - finalTemp) * Math.exp(-coolingRate * i);
+                materialTempPoints.push(matTemp);
+                
+                // Water heating curve (exponential approach to final temp)
+                const watTemp = finalTemp - (finalTemp - waterTemp) * Math.exp(-coolingRate * i);
+                waterTempPoints.push(watTemp);
+            }
+            
+            // Update chart
+            chart.data.labels = timePoints;
+            chart.data.datasets[0].data = materialTempPoints;
+            chart.data.datasets[1].data = waterTempPoints;
+            chart.data.datasets[0].label = `${materials[material].name} Temperature`;
+            chart.data.datasets[0].borderColor = materials[material].color;
+            chart.update();
+        });
+
+        // Update material info when selection changes
+        document.getElementById('material').addEventListener('change', updateMaterialInfo);
+        
+        // Initialize
+        updateMaterialInfo();
+    </script>
+<script defer="" src="./Calorimetry Simulation_files/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;7f017c73099d46f0b032c070dc5e6bd7&quot;,&quot;r&quot;:1,&quot;server_timing&quot;:{&quot;name&quot;:{&quot;cfCacheStatus&quot;:true,&quot;cfEdge&quot;:true,&quot;cfExtPri&quot;:true,&quot;cfL4&quot;:true,&quot;cfOrigin&quot;:true,&quot;cfSpeedBrain&quot;:true},&quot;location_startswith&quot;:null}}" crossorigin="anonymous"></script>
+
+</body></html>
